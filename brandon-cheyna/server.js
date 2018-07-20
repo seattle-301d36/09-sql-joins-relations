@@ -6,7 +6,9 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = '';
+// Brandon - updated conString
+const conString = 'postgres://postgres:Lookingforwardtothesequel@localhost:3000/kilovolt';
+
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
