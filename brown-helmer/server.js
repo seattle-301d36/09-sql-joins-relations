@@ -35,14 +35,11 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = 'SELECT title, author, author_url, category, published_on, body FROM articles INNER JOIN authors ON articles.author_id = authors.author_id';
-  let values = [
-    request.body.title,
+  let SQL = `INSERT author, author_url 
+   VALUES ();`;
+  let values[
     request.body.author,
     request.body.author_url,
-    request.body.category,
-    request.body.published_on,
-    request.body.body
   ];
 
   client.query(SQL, values,
