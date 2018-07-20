@@ -6,12 +6,12 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = '';
+const conString = 'postgres://postgres:1234@localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
   console.error(error);
-});
+}); 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,7 +24,8 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(``)
+  let SQL = 'SELECT * FROM articles INNER JOIN authors ON articles.author_id = authors.author_id';
+  client.query(SQL)
     .then(result => {
       response.send(result.rows);
     })
@@ -34,8 +35,15 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = '';
-  let values = [];
+  let SQL = 'SELECT title, author, author_url, category, published_on, body FROM articles INNER JOIN authors ON articles.author_id = authors.author_id';
+  let values = [
+    request.body.title,
+    request.body.author,
+    request.body.author_url,
+    request.body.category,
+    request.body.published_on,
+    request.body.body
+  ];
 
   client.query(SQL, values,
     function(err) {
@@ -45,10 +53,11 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
-
+ 
   function queryTwo() {
+    SQL = '';
+    values = [];
+
     client.query(SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -59,10 +68,11 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
+  
 
   function queryThree(author_id) {
+    SQL = '';
+    values = [];
     client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
