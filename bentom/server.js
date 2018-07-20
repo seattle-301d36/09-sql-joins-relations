@@ -11,7 +11,7 @@ const app = express();
 let conString = '';
 if (process.platform === 'win32') {
   //windows
-  conString = 'postgres://localhost:5432/kilovolt';
+  conString = 'postgres://postgres:1234@localhost:5432/kilovolt';
 } else if (process.platform === 'darwin') {
   //mac
   conString = 'postgres://localhost:5432';
@@ -58,13 +58,11 @@ app.get('/articles', (request, response) => {
 
 app.post('/articles', (request, response) => {
   let SQL = `
-    INSERT INTO articles(title, category, published_on, body) VALUES ($1, $2, $3, $4);
+    INSERT INTO authors(author, author_url) VALUES ($1, $2);
   `;
   let values = [
-    request.body.title,
-    request.body.category,
-    request.body.published_on,
-    request.body.body
+    request.body.author,
+    request.body.author_url,
   ];
 
   client.query(SQL, values, function(err) {
@@ -75,7 +73,7 @@ app.post('/articles', (request, response) => {
 
   function queryTwo() {
     let SQL = `
-      SELECT author_id FROM authors WHERE author=$1
+      SELECT author_id FROM authors WHERE author=$1;
     `;
     let values = [
       request.body.author
@@ -91,17 +89,15 @@ app.post('/articles', (request, response) => {
 
   function queryThree(author_id) {
     SQL = `
-      INSERT INTO articlesrs
-      SELECT articles.author_id
-      WHERE authors.author_id=$1;
+      INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1, $2, $3, $4, $5);
     `;
-    // SQL = `
-    //   INSERT INTO articles.author_id
-    //   INNER JOIN authors
-    //   ON authors.author_id = articles.author_id
-    //   WHERE authors.author_id=$1;
-    // `;
-    values = [author_id];
+    values = [
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body,
+    ];
     client.query(SQL, values, function(err) {
       if (err) console.error(err);
       response.send('insert complete'); // callback happens here
@@ -110,8 +106,14 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = '';
-  let values = [];
+  let SQL = 'UPDATE articles SET title = $2 category = $3 published_on = $4 body = $5 WHERE article_id = $1';
+  let values = [
+    request.params.id,
+    request.body.title,
+    request.body.category,
+    request.body.published_on,
+    request.body.body,
+  ];
   client
     .query(SQL, values)
     .then(() => {
