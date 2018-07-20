@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 const conString = 'postgres://j:password@localhost:5432/kilovolt';
+
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -24,7 +25,9 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query('sql')
+  const sql = 'SELECT authors.author, authors.author_url, articles.title, articles.category, articles.published_on,' +
+    ' articles.body FROM authors INNER JOIN articles ON authors.author_id = articles.author_id';
+  client.query(sql)
     .then(result => {
       response.send(result.rows);
     })
@@ -33,22 +36,26 @@ app.get('/articles', (request, response) => {
     });
 });
 
-app.post('/articles', (request, response) => {
-  let SQL = 'SELECT authors.author, authors.author_url, articles.title, articles.category, articles.published_on, articles.body FROM authors INNER JOIN articles ON authors.author_id = articles.author_id;';
-  let values = [];
 
+app.post('/articles', (request, response) => {
+  const SQL = 'INSERT INTO authors(author, author_url) VALUES ($1, $2) ON CONFLICT (author) DO NOTHING';
+    const values = [
+      request.body.author,
+      request.body.author_url
+    ];
+  
   client.query(SQL, values,
+
     function(err) {
       if (err) console.error(err);
       // REVIEW: This is our second query, to be executed when this first query is complete.
       queryTwo();
     }
-  )
-
-  SQL = '';
-  values = [];
+  );
 
   function queryTwo() {
+    SQL = ' SELECT author_id FROM authors WHERE author = $1';
+    let values = [request.body.author];
     client.query(SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -58,11 +65,16 @@ app.post('/articles', (request, response) => {
       }
     )
   }
-
-  SQL = '';
-  values = [];
-
+ 
   function queryThree(author_id) {
+    SQL = 'INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1,$2,$3,$4,$5)';
+    let values =[
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body
+    ]; 
     client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
