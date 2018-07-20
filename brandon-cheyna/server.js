@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // Brandon - updated conString
-const conString = 'postgres://postgres:Lookingforwardtothesequel@localhost:3000/kilovolt';
+const conString = 'postgres://postgres:Lookingforwardtothesequel@localhost:5432/kilovolt';
 
 const client = new pg.Client(conString);
 client.connect();
@@ -47,10 +47,11 @@ app.post('/articles', (request, response) => {
     }
   )
 
-  SQL = '';
-  values = [];
+
 
   function queryTwo() {
+    SQL = '';
+    values = [];
     client.query(SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -61,10 +62,11 @@ app.post('/articles', (request, response) => {
     )
   }
 
-  SQL = '';
-  values = [];
+
 
   function queryThree(author_id) {
+    SQL = '';
+    values = [];
     client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
