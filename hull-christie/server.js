@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = 'postgres://j:password@localhost:5432/kilovolt';
+const conString = 'postgres://hoffit:password@localhost:5432/kilovolt';
 
 const client = new pg.Client(conString);
 client.connect();
@@ -15,12 +15,12 @@ client.on('error', error => {
 });
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(express.static('./public'));
 
 // REVIEW: These are routes for requesting HTML resources.
 app.get('/new-article', (request, response) => {
-  response.sendFile('new.html', { root: './public' });
+  response.sendFile('new.html', {root: './public'});
 });
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
@@ -35,17 +35,16 @@ app.get('/articles', (request, response) => {
     });
 });
 
-
 app.post('/articles', (request, response) => {
   const SQL = 'INSERT INTO authors(author, author_url) VALUES ($1, $2) ON CONFLICT (author) DO NOTHING';
-    const values = [
-      request.body.author,
-      request.body.author_url
-    ];
+  const values = [
+    request.body.author,
+    request.body.author_url
+  ];
 
   client.query(SQL, values,
 
-    function(err) {
+    function (err) {
       if (err) console.error(err);
       // REVIEW: This is our second query, to be executed when this first query is complete.
       queryTwo();
@@ -55,8 +54,8 @@ app.post('/articles', (request, response) => {
   function queryTwo() {
     const sql = 'SELECT author_id FROM authors WHERE author = $1';
     let values = [request.body.author];
-    client.query(SQL, values,
-      function(err, result) {
+    client.query(sql, values,
+      function (err, result) {
         if (err) console.error(err);
 
         // REVIEW: This is our third query, to be executed when the second is complete. We are also passing the author_id into our third query.
@@ -67,15 +66,15 @@ app.post('/articles', (request, response) => {
 
   function queryThree(author_id) {
     const sql = 'INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1,$2,$3,$4,$5)';
-    let values =[
+    let values = [
       author_id,
       request.body.title,
       request.body.category,
       request.body.published_on,
       request.body.body
     ];
-    client.query(SQL, values,
-      function(err) {
+    client.query(sql, values,
+      function (err) {
         if (err) console.error(err);
         response.send('insert complete');
       }
@@ -83,14 +82,24 @@ app.post('/articles', (request, response) => {
   }
 });
 
-app.put('/articles/:id', function(request, response) {
-  let SQL = '';
-  let values = [];
-  client.query(SQL, values)
+app.put('/articles/:id', function (request, response) {
+  let sql = 'UPDATE authors SET author=$1 author_url=$2 WHERE author_id=$3';
+  let values = [
+    request.body.author,
+    request.body.author_url,
+    request.body.params_id
+  ];
+  client.query(sql, values)
     .then(() => {
-      let SQL = '';
-      let values = [];
-      client.query(SQL, values)
+      let sql = 'UPDATE articles SET title=$1 category=$2 published_on=$3 body=$4 WHERE author_id=$5';
+      let values = [
+        request.body.title,
+        request.body.category,
+        request.body.published_on,
+        request.body.body,
+        request.body.params_id
+      ];
+      client.query(sql, values)
     })
     .then(() => {
       response.send('Update complete');
