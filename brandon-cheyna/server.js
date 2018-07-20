@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // Brandon - updated conString
-const conString = 'postgres://postgres:Lookingforwardtothesequel@localhost:5432/kilovolt';
+const conString = 'postgres://postgres:1234@localhost:5432/kilovolt';
 
 const client = new pg.Client(conString);
 client.connect();
@@ -26,7 +26,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  //TODO
+  //DONE
   client.query(`SELECT *
   FROM authors
   INNER JOIN articles
@@ -40,9 +40,16 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  //TODO
-  let SQL = '';
-  let values = [];
+  // DONE
+  let SQL = `
+  INSERT INTO authors(author, author_url)
+  VALUES ($1, $2) ON CONFLICT DO NOTHING;
+`;
+
+  let values = [
+    request.body.author,
+    request.body.author_url,
+  ];
 
   client.query(SQL, values,
     function(err) {
@@ -54,8 +61,8 @@ app.post('/articles', (request, response) => {
 
   function queryTwo() {
     //TODO
-    SQL = '';
-    values = [];
+    SQL = `SELECT author_id FROM authors WHERE author=$1;`;
+    values = [request.body.author];
     client.query(SQL, values,
       function(err, result) {
         if (err) console.error(err);
@@ -70,8 +77,17 @@ app.post('/articles', (request, response) => {
 
   function queryThree(author_id) {
     //TODO
-    SQL = '';
-    values = [];
+    SQL = `INSERT INTO articles(author_id, title, category, published_on, body)
+          VALUES ($1, $2, $3, $4, $5);
+    `;
+    values = [
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body
+    ];
+
     client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
