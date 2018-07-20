@@ -58,7 +58,7 @@ app.get('/articles', (request, response) => {
 
 app.post('/articles', (request, response) => {
   let SQL = `
-    INSERT INTO authors(author, author_url) VALUES ($1, $2);
+    INSERT INTO authors(author, author_url) VALUES ($1, $2) ON CONFLICT DO NOTHING;
   `;
   let values = [
     request.body.author,
@@ -106,7 +106,7 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = 'UPDATE articles SET title = $2 category = $3 published_on = $4 body = $5 WHERE article_id = $1';
+  let SQL = `UPDATE articles SET title=$2, category=$3, published_on=$4, body=$5 WHERE article_id=$1;`;
   let values = [
     request.params.id,
     request.body.title,
@@ -117,8 +117,12 @@ app.put('/articles/:id', function(request, response) {
   client
     .query(SQL, values)
     .then(() => {
-      let SQL = '';
-      let values = [];
+      let SQL = `UPDATE authors SET author=$1, author_url=$2 WHERE author_id=$3;`;
+      let values = [
+        request.body.author,
+        request.body.author_url,
+        request.body.author_id
+      ];
       client.query(SQL, values);
     })
     .then(() => {
@@ -143,7 +147,7 @@ app.delete('/articles/:id', (request, response) => {
 });
 
 app.delete('/articles', (request, response) => {
-  let SQL = 'DELETE FROM articles';
+  let SQL = 'TRUNCATE TABLE articles';
   client
     .query(SQL)
     .then(() => {
