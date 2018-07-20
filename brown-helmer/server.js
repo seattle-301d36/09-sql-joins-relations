@@ -36,7 +36,8 @@ app.get('/articles', (request, response) => {
 
 app.post('/articles', (request, response) => {
   let SQL = `INSERT author, author_url 
-   VALUES ();`;
+   VALUES ($1, $2
+  );`;
   let values[
     request.body.author,
     request.body.author_url,
