@@ -34,7 +34,7 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = `INSERT INTO authors(author, author_url) values($1, $2);`;
+  let SQL = `INSERT INTO authors(author, author_url) values($1, $2) ON CONFLICT DO NOTHING;`;
   let values = [
                 request.body.author, 
                 request.body.author_url
