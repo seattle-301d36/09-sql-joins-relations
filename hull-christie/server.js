@@ -6,7 +6,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const conString = '';
+let conString = 'postgres://hoffit:password@localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', error => {
@@ -24,7 +24,18 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  client.query(``)
+
+  /**
+   *
+   * SELECT column_1_name, column_2_name, ...
+   * FROM first_table_name
+   * INNER JOIN second_table_name
+   * ON first_table_name.keyfield = second_table_name.foreign_keyfield
+   */
+
+  const sql = 'SELECT authors.author, authors.author_url, articles.title, articles.category, articles.published_on,' +
+    ' articles.body FROM authors INNER JOIN articles ON authors.author_id = articles.author_id';
+  client.query(sql)
     .then(result => {
       response.send(result.rows);
     })
