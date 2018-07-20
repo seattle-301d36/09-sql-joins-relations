@@ -25,8 +25,7 @@ app.get('/new-article', (request, response) => {
 
 // REVIEW: These are routes for making API calls to enact CRUD operations on our database.
 app.get('/articles', (request, response) => {
-  const sql = 'SELECT authors.author, authors.author_url, articles.title, articles.category, articles.published_on,' +
-    ' articles.body FROM authors INNER JOIN articles ON authors.author_id = articles.author_id';
+  const sql = 'SELECT * FROM authors INNER JOIN articles ON authors.author_id = articles.author_id';
   client.query(sql)
     .then(result => {
       response.send(result.rows);
@@ -43,7 +42,7 @@ app.post('/articles', (request, response) => {
       request.body.author,
       request.body.author_url
     ];
-  
+
   client.query(SQL, values,
 
     function(err) {
@@ -54,7 +53,7 @@ app.post('/articles', (request, response) => {
   );
 
   function queryTwo() {
-    SQL = ' SELECT author_id FROM authors WHERE author = $1';
+    const sql = 'SELECT author_id FROM authors WHERE author = $1';
     let values = [request.body.author];
     client.query(SQL, values,
       function(err, result) {
@@ -65,16 +64,16 @@ app.post('/articles', (request, response) => {
       }
     )
   }
- 
+
   function queryThree(author_id) {
-    SQL = 'INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1,$2,$3,$4,$5)';
+    const sql = 'INSERT INTO articles(author_id, title, category, published_on, body) VALUES ($1,$2,$3,$4,$5)';
     let values =[
       author_id,
       request.body.title,
       request.body.category,
       request.body.published_on,
       request.body.body
-    ]; 
+    ];
     client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
