@@ -35,12 +35,10 @@ app.get('/articles', (request, response) => {
 });
 
 app.post('/articles', (request, response) => {
-  let SQL = `INSERT author, author_url 
-   VALUES ($1, $2
-  );`;
-  let values[
-    request.body.author,
-    request.body.author_url,
+  let SQL = `INSERT INTO authors (authors, author_url) 
+   VALUES ($1, $2)ON CONFLICT DO NOTHING`;
+  let values = [
+    request.body.author, request.body.author_url
   ];
 
   client.query(SQL, values,
@@ -53,8 +51,8 @@ app.post('/articles', (request, response) => {
 
  
   function queryTwo() {
-    SQL = '';
-    values = [];
+    let SQL = `SELECT author_id FROM authors WHERE author=$1`;
+    values = [request.body.author];
 
     client.query(SQL, values,
       function(err, result) {
@@ -69,9 +67,19 @@ app.post('/articles', (request, response) => {
   
 
   function queryThree(author_id) {
-    SQL = '';
-    values = [];
-    client.query(SQL, values,
+    let SQL = `
+      INSERT INTO articles(author_id, title, category, published_on, body)
+      VALUES ($1, $2, $3, $4, $5);
+    `;
+    values = [      
+      author_id,
+      request.body.title,
+      request.body.category,
+      request.body.published_on,
+      request.body.body
+    ];
+    
+      client.query(SQL, values,
       function(err) {
         if (err) console.error(err);
         response.send('insert complete');
@@ -81,12 +89,31 @@ app.post('/articles', (request, response) => {
 });
 
 app.put('/articles/:id', function(request, response) {
-  let SQL = '';
-  let values = [];
+  let SQL = `
+  UPDATE authors
+  SET author=$1, author_url=$2
+  WHERE author_id=$3
+`;
+let values = [
+  request.body.author, 
+  request.body.author_url, 
+  request.body.author_id
+];
   client.query(SQL, values)
     .then(() => {
-      let SQL = '';
-      let values = [];
+      let SQL = `
+        UPDATE articles
+        SET author_id=$1, title=$2, category=$3, published_on=$4, body=$5
+        WHERE article_id=$6
+      `;
+      let values = [
+        request.body.author_id,
+        request.body.title,
+        request.body.category,
+        request.body.published_on,
+        request.body.body,
+        request.params.id
+      ];
       client.query(SQL, values)
     })
     .then(() => {
